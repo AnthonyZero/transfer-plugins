@@ -8,12 +8,15 @@ import (
 	"syscall"
 	"transfer-plugins/configs"
 	"transfer-plugins/internal/kafka"
+	"transfer-plugins/pkg/logger"
 )
 
 func main() {
 	log.Println("Starting a new Sarama consumer")
 
 	configs.Init("dev")
+	//日志初始化
+	logger.InitZapLogger(configs.Get().Base.LogPath, logger.ToLevel("info"))
 
 	err := kafka.NewClient()
 	if err != nil {

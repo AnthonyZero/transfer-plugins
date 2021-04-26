@@ -1,6 +1,6 @@
 [base]
 appName = 'data-transfer'
-logPath = 'logs'
+logPath = 'C:/develop/logs/transfer'
 
 [kafka]
 addr = '10.100.20.27:9092'       # Kafka bootstrap brokers to connect to, as a comma separated list
