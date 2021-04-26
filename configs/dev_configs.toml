@@ -1,0 +1,10 @@
+[base]
+appName = 'data-transfer'
+logPath = 'logs'
+
+[kafka]
+addr = '10.100.20.27:9092'       # Kafka bootstrap brokers to connect to, as a comma separated list
+group = 'test-consumer-group'    # Kafka consumer group definition
+assignor = "range"               # Consumer group partition assignment strategy (range, roundrobin, sticky)
+oldest = true                    # Kafka consumer consume initial offset from oldest
+topicAction = "wm_action"        # user action kafka topic
