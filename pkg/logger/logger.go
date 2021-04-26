@@ -85,12 +85,12 @@ func levelZapCoreFile(encoder zapcore.Encoder, level zapcore.Level, filename str
 //获取对于level日志文件的io.Writer 抽象
 func getWriter(filename string) io.Writer {
 	// 生成rotatelogs的Logger
-	// 保存7天内的日志，每1小时(整点)分割一次日志
+	// 保存30天内的日志，每1天分割一次日志
 	hook, err := rotatelogs.New(
-		strings.Replace(filename, ".log", "", -1)+"-%Y%m%d.%H.log", // 没有使用go风格反人类的format格式
-		rotatelogs.WithLinkName(filename),                          //liunx 软链接 指向最新的log
-		rotatelogs.WithMaxAge(time.Hour*24*7),
-		rotatelogs.WithRotationTime(time.Hour*1),
+		strings.Replace(filename, ".log", "", -1)+"-%Y%m%d.log", // 没有使用go风格反人类的format格式
+		rotatelogs.WithLinkName(filename),                       //liunx 软链接 指向最新的log
+		rotatelogs.WithMaxAge(time.Hour*24*30),
+		rotatelogs.WithRotationTime(time.Hour*24),
 	)
 
 	if err != nil {
