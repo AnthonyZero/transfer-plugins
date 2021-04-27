@@ -16,7 +16,7 @@ func (consumer *Consumer) Listener(ctx context.Context) {
 	topicName := configs.Get().Kafka.TopicAction
 	go func() {
 		for {
-			err := ConsumerGroup().Consume(ctx, []string{topicName}, consumer)
+			err := (*ConsumerGroup()).Consume(ctx, []string{topicName}, consumer)
 			if err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
