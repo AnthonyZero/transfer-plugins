@@ -9,10 +9,10 @@ import (
 	"transfer-plugins/configs"
 )
 
-var kafkaClient *client
+var client *Client
 
-type client struct {
-	group *sarama.ConsumerGroup
+type Client struct {
+	client sarama.ConsumerGroup
 }
 
 func NewClient() error {
@@ -37,18 +37,18 @@ func NewClient() error {
 		log.Printf("Error creating consumer group client: %v", err)
 		return err
 	}
-	kafkaClient = &client{
-		group: &consumerGroup,
+	client = &Client{
+		client: consumerGroup,
 	}
 	return nil
 }
 
-func ConsumerGroup() *sarama.ConsumerGroup {
-	return kafkaClient.group
+func ConsumerGroup() sarama.ConsumerGroup {
+	return client.client
 }
 
 func Close() {
-	if err := (*ConsumerGroup()).Close(); err != nil {
+	if err := client.client.Close(); err != nil {
 		log.Printf("Error closing client err:%v\n", err)
 	}
 	log.Printf("Kafka consumerGroup stopped\n")
