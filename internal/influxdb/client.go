@@ -17,7 +17,8 @@ type dbClient struct {
 
 func NewClient() error {
 	config := configs.Get().InfluxDB
-	client := influxdb2.NewClient(config.Addr, config.Token)
+	client := influxdb2.NewClientWithOptions(config.Addr, config.Token,
+		influxdb2.DefaultOptions().SetFlushInterval(config.FlushInterval).SetBatchSize(config.BatchSize))
 	if client == nil {
 		return errors.New("Get client nil, please check addr/token")
 	}

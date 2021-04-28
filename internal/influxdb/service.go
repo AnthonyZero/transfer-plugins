@@ -9,6 +9,8 @@ import (
 
 type Service interface {
 	WriteData(points []models.UserAction) error
+	WritePoint(point models.UserAction) error
+	Flush()
 }
 
 type service struct {
@@ -41,4 +43,21 @@ func (s *service) WriteData(points []models.UserAction) error {
 	}
 	(*s.writeApi).Flush()
 	return nil
+}
+
+func (s *service) WritePoint(point models.UserAction) error {
+	p := influxdb2.NewPointWithMeasurement(point.Metrics).
+		AddTag("userId", point.UserId).
+		AddTag("type", point.Type).
+		AddField("subType", point.SubType).
+		AddField("targetId", point.TargetId).
+		SetTime(point.Timestamp)
+	(*s.writeApi).WritePoint(p)
+	return nil
+}
+
+func (s *service) Flush() {
+	//force flush buffer
+	//默认时间间隔 flushInterval: 1000（ms）
+	(*s.writeApi).Flush()
 }
