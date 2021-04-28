@@ -21,6 +21,15 @@ type config struct {
 		Oldest      bool   `toml:"oldest"`
 		TopicAction string `toml:"topicAction"`
 	} `toml:"kafka"`
+	//influxdb配置
+	InfluxDB struct {
+		Addr          string `toml:"addr"`
+		Token         string `toml:"token"`
+		Bucket        string `toml:"bucket"`
+		Org           string `toml:"org"`
+		BatchSize     uint   `toml:"batchSize"`
+		FlushInterval uint   `toml:"flushInterval"`
+	} `toml:"kafka"`
 }
 
 //private
