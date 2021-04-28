@@ -2,30 +2,55 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"transfer-plugins/configs"
+	"transfer-plugins/internal/influxdb"
 	"transfer-plugins/internal/kafka"
 	"transfer-plugins/pkg/logger"
+	"transfer-plugins/utils"
+)
+
+var (
+	config = flag.String("env", "", "请输入运行环境:\n dev:开发环境\n fat:测试环境\n uat:预上线环境\n pro:正式环境\n")
 )
 
 func main() {
-	log.Println("Starting a new Sarama consumer")
+	flag.Parse()
+	if *config == "" {
+		configs.Init("dev")
+		log.Println("Warning: '-env' cannot be found, The default 'dev' will be used.")
+	} else {
+		envs := []string{"dev", "fat", "uat", "pro"}
+		if !utils.Contain(*config, envs) {
+			log.Println("Error: '-env' it is illegal")
+			flag.Usage()
+			os.Exit(1)
+		}
+		configs.Init(*config)
+	}
 
-	configs.Init("dev")
 	//日志初始化
 	logger.InitZapLogger(configs.Get().Base.LogPath, logger.ToLevel("info"))
 
-	err := kafka.NewClient()
-	if err != nil {
+	//kafka消费组
+	if err := kafka.NewClient(); err != nil {
 		log.Println(err)
+		os.Exit(1)
+	}
+	//influxdb2
+	if err := influxdb.NewClient(); err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
 
 	ctx, cancle := context.WithCancel(context.Background())
 	consumer := &kafka.Consumer{
-		Ready: make(chan bool),
+		Ready:   make(chan bool),
+		Service: influxdb.NewService(influxdb.WriteApi()),
 	}
 	consumer.Listener(ctx)
 
@@ -39,4 +64,5 @@ func main() {
 	}
 	cancle()
 	kafka.Close()
+	influxdb.Close()
 }
