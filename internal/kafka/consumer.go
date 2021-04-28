@@ -2,14 +2,18 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/Shopify/sarama"
 	"log"
 	"transfer-plugins/configs"
+	"transfer-plugins/internal/influxdb"
+	"transfer-plugins/internal/models"
 	"transfer-plugins/pkg/logger"
 )
 
 type Consumer struct {
-	Ready chan bool
+	Ready   chan bool
+	Service influxdb.Service
 }
 
 func (consumer *Consumer) Listener(ctx context.Context) {
@@ -42,9 +46,17 @@ func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
 }
 
 func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	//var points []models.UserAction
 	for message := range claim.Messages() {
-		logger.Infof("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-		session.MarkMessage(message, "")
+		value := string(message.Value)
+
+		var userAction models.UserAction
+		json.Unmarshal([]byte(value), &userAction)
+		consumer.Service.WritePoint(userAction)
+		session.MarkMessage(message, "") //commit offset
+
+		logger.Infof("Message claimed: value = %s, timestamp = %v, topic = %s", value, message.Timestamp, message.Topic)
 	}
+	//log.Println("here no execute")
 	return nil
 }
